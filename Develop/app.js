@@ -10,10 +10,126 @@ const outputPath = path.join(OUTPUT_DIR, "team.html");
 
 const render = require("./lib/htmlRenderer");
 
-
 // Write code to use inquirer to gather information about the development team members,
 // and to create objects for each team member (using the correct classes as blueprints!)
+const questions = [
 
+  {
+    type: "input",
+    message: "What's the Employees name?",
+    name: "employeeName",
+  },
+  {
+    type: "input",
+    message: "What's the employees email address?",
+    name: "employeeEmail",
+  },
+  {
+    type: "input",
+    message: "What's the employees ID?",
+    name: "employeeID",
+  },
+  {
+    type: "list",
+    message: "What's the Employees role?",
+    name: "employeeRole",
+    choices: ["Intern", "Engineer", "Manager"],
+    default: "Employee",
+  },
+  {
+    type: "input",
+    message: "What's the Engineers github username?",
+    name: "github",
+    when: (answers) => answers.employeeRole === "Engineer",
+  },
+  {
+    type: "input",
+    message: "What school is the Intern from?",
+    name: "school",
+    when: (answers) => answers.employeeRole === "Intern",
+  },
+  {
+    type: "input",
+    message: "What's the Managers office number location?",
+    name: "officeNumber",
+    when: (answers) => answers.employeeRole === "Manager",
+  },
+];
+
+function quit() {
+  console.log("That's all the employees!");
+  process.exit(0);
+}
+
+function addEmployee() {
+  inquirer
+    .prompt([
+      {
+        type: "confirm",
+        message: "Would you like to add another employee?",
+        name: "addEmployee",
+      },
+    ])
+    .then((val) => {
+      if (val.addEmployee) {
+        createEmployee();
+      } else {
+        quit();
+      }
+    });
+}
+
+function createEmployee() {
+  inquirer.prompt(questions).then((response) => {
+    console.log(response);
+    console.log("===================");
+    if (response.employeeRole === "Engineer") {
+      let newDev = new Engineer(
+        response.employeeName,
+        response.employeeID,
+        response.employeeEmail,
+        response.github
+      );
+      newDev.getRole();
+      console.log(newDev);
+      fs.appendFile(outputPath, newDev, (err) => {
+        if (err) throw err;
+        console.log("You've added an engineer!");
+      });
+      addEmployee();
+    } else if (response.employeeRole === "Intern") {
+      let newIntern = new Intern(
+        response.employeeName,
+        response.employeeID,
+        response.employeeEmail,
+        response.school
+      );
+      newIntern.getRole();
+      console.log(newIntern);
+      fs.appendFile(outputPath, newManager, (err) => {
+        if (err) throw err;
+        console.log("You've added an engineer!");
+      });
+      addEmployee();
+    } else if (response.employeeRole === "Engineer") {
+      let newManager = new Manager(
+        response.employeeName,
+        response.employeeID,
+        response.employeeEmail,
+        response.github
+      );
+      newManager.getRole();
+      console.log(newManager);
+      fs.appendFile(outputPath, newManager, (err) => {
+        if (err) throw err;
+        console.log("You've added an engineer!");
+      });
+      addEmployee();
+    }
+  });
+}
+
+createEmployee();
 // After the user has input all employees desired, call the `render` function (required
 // above) and pass in an array containing all employee objects; the `render` function will
 // generate and return a block of HTML including templated divs for each employee!
