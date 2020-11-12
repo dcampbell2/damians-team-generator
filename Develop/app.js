@@ -13,7 +13,6 @@ const render = require("./lib/htmlRenderer");
 // Write code to use inquirer to gather information about the development team members,
 // and to create objects for each team member (using the correct classes as blueprints!)
 const questions = [
-
   {
     type: "input",
     message: "What's the Employees name?",
@@ -56,12 +55,9 @@ const questions = [
   },
 ];
 
-function quit() {
-  console.log("That's all the employees!");
-  process.exit(0);
-}
+let newEmployees = [];
 
-function addEmployee() {
+function addEmployee(newEmployees) {
   inquirer
     .prompt([
       {
@@ -74,7 +70,13 @@ function addEmployee() {
       if (val.addEmployee) {
         createEmployee();
       } else {
-        quit();
+        console.log(newEmployees)
+        const renderedHTML = render(newEmployees);
+        // console.log(renderedHTML);
+        fs.appendFile(outputPath, renderedHTML, "utf8", (err) => {
+          if (err) throw err;
+          console.log("You're team file is ready!");
+        });
       }
     });
 }
@@ -84,7 +86,7 @@ function createEmployee() {
     console.log(response);
     console.log("===================");
     if (response.employeeRole === "Engineer") {
-      let newDev = new Engineer(
+        let newDev = new Engineer(
         response.employeeName,
         response.employeeID,
         response.employeeEmail,
@@ -92,13 +94,11 @@ function createEmployee() {
       );
       newDev.getRole();
       console.log(newDev);
-      fs.appendFile(outputPath, newDev, (err) => {
-        if (err) throw err;
-        console.log("You've added an engineer!");
-      });
-      addEmployee();
+      newEmployees.push(newDev);
+      console.log(newEmployees);
+      addEmployee(newEmployees);
     } else if (response.employeeRole === "Intern") {
-      let newIntern = new Intern(
+        let newIntern = new Intern(
         response.employeeName,
         response.employeeID,
         response.employeeEmail,
@@ -106,25 +106,21 @@ function createEmployee() {
       );
       newIntern.getRole();
       console.log(newIntern);
-      fs.appendFile(outputPath, newManager, (err) => {
-        if (err) throw err;
-        console.log("You've added an engineer!");
-      });
-      addEmployee();
-    } else if (response.employeeRole === "Engineer") {
-      let newManager = new Manager(
+      newEmployees.push(newIntern);
+      console.log(newEmployees);
+      addEmployee(newEmployees);
+    } else if (response.employeeRole === "Manager") {
+        let newManager = new Manager(
         response.employeeName,
         response.employeeID,
         response.employeeEmail,
-        response.github
+        response.officeNumber
       );
       newManager.getRole();
       console.log(newManager);
-      fs.appendFile(outputPath, newManager, (err) => {
-        if (err) throw err;
-        console.log("You've added an engineer!");
-      });
-      addEmployee();
+      newEmployees.push(newManager);
+      console.log(newEmployees);
+      addEmployee(newEmployees);
     }
   });
 }
